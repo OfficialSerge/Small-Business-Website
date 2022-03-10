@@ -1,0 +1,35 @@
+.Navbar {
+  display: inline;
+  position: fixed;
+  top: 3vmin;
+  width: 95%;
+  z-index: 1;
+}
+
+ul {
+  list-style-type: none;
+  font-size: 2.5vmin;
+  font-weight: bold;
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  display: inline;
+  padding: 0 5px 0 5px;
+}
+
+li:nth-child(n+2) {
+  float: right;
+  padding: 0 7px 0 7px;
+}
+
+a {
+  cursor: default;
+  color: #6080a8;
+  text-decoration: none;
+}
+
+li:nth-child(n+2) a:hover {
+  color: white;
+}

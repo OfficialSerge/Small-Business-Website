@@ -1,38 +1,76 @@
-.App {
-  text-align: center;
+html {
+  background: #d8e1f1; 
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.webgl {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  outline: none;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.app {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 100vh 100vh 100vh 50vh;
+  grid-template-areas: 
+  'section1'
+  'section2'
+  'section3'
+  'section4'
+  ;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.section1{
+  grid-area: section1;
+
+}
+.section2{
+  grid-area: section2;
+  align-items: baseline;
+}
+.section3{
+  grid-area: section3;
+  padding-top: 15vmin;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.section4{
+  grid-area: section4;
+}
+section {
+  display: flex;
+  align-items: center;
+  position: relative;
+  font-family: 'Cabin', sans-serif;
+  color: #6080a8;
+  text-transform: uppercase;
+  font-size: 1.25vw;
+  padding-left: 2.5%;
+  padding-right: 2.5%;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+section:nth-child(odd) {
+  justify-content: flex-end;
 }
+
+@media only screen and (max-width: 550px) {
+  .app {
+    overflow: hidden;
+    grid-template-columns: 100vw;
+    grid-template-rows: 100vh 300vh 100vh 100vh;
+    grid-template-areas: 
+    'section1'
+    'section2'
+    'section3'
+    'section4'
+  }
+  .section2 {
+    display: grid;
+    padding: 0 5vmin 0 5vmin;
+  }
+} 

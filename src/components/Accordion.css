@@ -1,0 +1,133 @@
+.folder {
+  box-shadow: 5px 5px 10px 2px rgba(0, 0, 0, 0.15);
+  padding: 10px;
+  background: rgba(186, 222, 251, 0.75);
+  border-radius: 10px;
+}
+
+.tabs {
+  overflow: hidden;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-size: 1.5vmax;
+  list-style: none;
+}
+
+.tabs li {
+  float: left;
+  margin: 0 10px 0 0;
+  padding: 0;
+}
+
+.tabs a {
+  float: left;
+  position: relative;
+  padding: 1.5vmin 1.5vmax;
+  
+  background: rgba(255, 255, 255, .75);
+  backdrop-filter: blur(5px);
+  border-radius: 5px 13px 0 0;
+}
+
+.tabs a::after {
+  content:'';
+  position:absolute;
+  top: 0;
+  right: -2px;
+  bottom: 0;
+  width: 7px;
+
+  background: rgb(0, 195, 255);
+  backdrop-filter: blur(5px);
+  border-radius: 0 5px 0 0;
+  transform: skew(10deg);
+
+  box-shadow: 2px 2px 2px rgba(0,0,0,.4);
+}
+
+.tabs a:hover {
+  transition: 200ms;
+  background: rgba(255, 255, 255, .5);
+}
+
+.tabs a:hover::after {
+  transition: 200ms;
+  background: rgba(255, 255, 255, .5);
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  padding: 2em; 
+  height: 55vmin;
+
+  background: rgba(255, 255, 255, .5);
+  backdrop-filter: blur(5px);
+  border: 2px solid rgb(0, 195, 255);
+  border-radius: 2px 2px 10px 10px;
+  border-top-style: none;
+  box-shadow: 0px -4px 5px -5px rgba(0, 0, 0, 0.25);
+}
+
+.tabText {
+  width: 94%;
+  height: inherit;
+  position: absolute;
+}
+
+.tabText h2, p {
+  animation: fadeIn ease 1s;
+  -webkit-animation: fadeIn ease 1s;
+  -moz-animation: fadeIn ease 1s;
+  -o-animation: fadeIn ease 1s;
+  -ms-animation: fadeIn ease 1s;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity:0;
+  }
+  100% {
+    opacity:1;
+  }
+}
+
+@-moz-keyframes fadeIn {
+  0% {
+    opacity:0;
+  }
+  100% {
+    opacity:1;
+  }
+}
+
+@-webkit-keyframes fadeIn {
+  0% {
+    opacity:0;
+  }
+  100% {
+    opacity:1;
+  }
+}
+
+@-o-keyframes fadeIn {
+  0% {
+    opacity:0;
+  }
+  100% {
+    opacity:1;
+  }
+}
+
+@-ms-keyframes fadeIn {
+  0% {
+    opacity:0;
+  }
+  100% {
+    opacity:1;
+  }
+}
