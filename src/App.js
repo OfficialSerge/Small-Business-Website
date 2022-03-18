@@ -16,7 +16,7 @@ import gsap from 'gsap'
 import React, { Component } from "react"
 import { Navbar } from './components/Navbar'
 import { Contact } from './components/Contact'
-import { FrostedGlass } from './components/FrostedGlass'
+import { StaffInfo } from './components/Staff/StaffInfo'
 import { List } from './components/List'
 import { Accordion } from './components/Accordion'
 
@@ -323,7 +323,7 @@ class App extends Component {
       //   )
     }
   }
-  
+
   // HANDLE EVENT
   handleMouseMove = (e) => {
     this.cursor.x = e.clientX / this.width - 0.5
@@ -338,14 +338,11 @@ class App extends Component {
         {/** Initial welcome */}
         <section id='home' className="section1">
           <Navbar />
-          <FrostedGlass height='70vmin' textHeight='0' width='50vmax' />
         </section>
 
         {/** Staff section */}
         <section id='staff' className="section2">
-          <FrostedGlass />
-          <FrostedGlass />
-          <FrostedGlass />
+          <StaffInfo />
         </section>
 
         {/** Services */}

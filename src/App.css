@@ -30,6 +30,8 @@ html {
 .section2{
   grid-area: section2;
   align-items: baseline;
+  background: rgba(255, 255, 255, .15);
+  backdrop-filter: blur(5px);
 }
 .section3{
   grid-area: section3;
