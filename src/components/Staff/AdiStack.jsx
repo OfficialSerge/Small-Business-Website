@@ -18,18 +18,18 @@ export function AdiStack() {
   }, [seconds, current])
 
   return (
-    <div className="container">
+    <div className="container" style={{ 'grid-area': 'adi' }}>
       <div className="imgSlider">
         <div className={`slide${current === 1 ? ' active' : ''}`}>
-          <img src="/assets/adi1.jpg" alt=':(' />
+          <img src="./assets/adi1.jpg" alt=':(' />
         </div>
 
         <div className={`slide${current === 2 ? ' active' : ''}`}>
-          <img src="/assets/adi2.jpg" alt=':(' />
+          <img src="./assets/adi2.jpg" alt=':(' />
         </div>
 
         <div className={`slide${current === 3 ? ' active' : ''}`}>
-          <img src="/assets/adi3.jpg" alt=':(' />
+          <img src="./assets/adi3.jpg" alt=':(' />
         </div>
 
         <div className="btnContainer">
@@ -43,9 +43,9 @@ export function AdiStack() {
 
       <div className="containerText">
         <p>
-          Dr. Adrian Pop has been practicing dentistry since 2013 when he recieved his Doctor of Dental Surgery degree from the University 
+          Dr. Adrian Pop has been practicing dentistry since 2013 when he recieved his Doctor of Dental Surgery degree from the University
           of Chicago, he performs minor oral surgery and root canal treatments in office.
-          
+
         </p>
       </div>
     </div>

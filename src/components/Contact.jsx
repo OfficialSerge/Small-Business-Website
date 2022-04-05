@@ -33,39 +33,39 @@ export class Contact extends Component {
 
   // MAPS JS API
   initMap = () => {
-    // map object
+    // INIT MAPS API
     this.map = new window.google.maps.Map(document.getElementById("googleMap"), mapOptions)
 
-    // add marker
+    // MARKER ON BUSINESS
     const marker = new window.google.maps.Marker({
       position: center,
       map: this.map
     })
 
-    // directions service
+    // INIT DIRECTIONS SERVICE
     this.directionsService = new window.google.maps.DirectionsService()
     this.directionsDisplay = new window.google.maps.DirectionsRenderer()
 
-    // bind directionsRenderer to map object
+    // BIND DIRECTIONS RENDERER TO MAP
     this.directionsDisplay.setMap(this.map)
   }
 
   // PLACES API
   initPlaces = () => {
-    // Places API takes an input object
+    // INIT PLACES API
     let input = document.getElementById('from')
     this.autocomplete = new window.google.maps.
       places.Autocomplete(input,
-        { // specify only data we need to save money
+        { // ONLY NEED ADDRESSES
           types: ['address'],
           fields: ['formatted_address']
         }
       )
 
-    // Set bias for places API
+    // SET MAP BIAS
     this.autocomplete.bindTo('bounds', this.map)
 
-    // Add required event listener
+    // SET ORIGIN FOR PLACES API
     this.autocomplete.addListener('place_changed', () => {
       const place = this.autocomplete.getPlace()
       this.setState({
@@ -76,10 +76,9 @@ export class Contact extends Component {
 
   // GET DIRECTIONS
   calcRoute = (e) => {
-    // handle event object
     e.preventDefault()
 
-    // request object
+    // REQUEST OBJ
     let request = {
       origin: this.state.origin,
       destination: center,
@@ -87,10 +86,9 @@ export class Contact extends Component {
       unitSystem: window.google.maps.UnitSystem.IMPERIAL
     }
 
-    // process request
+    // CALL DIRECTIONS SERVICE
     this.directionsService.route(request, (result, status) => {
       if (status === "OK") {
-        // get distance and time
         this.directionsDisplay.setDirections(result)
         this.setState({
           distance: result.routes[0].legs[0].distance.text,
@@ -121,12 +119,11 @@ export class Contact extends Component {
           <div className="form-group">
             <button
               onClick={(e) => this.calcRoute(e)}
-            >Route</button>
+            >Get Directions</button>
           </div>
           <div className='navigation'>
-            1520 Carlemont Dr, Crystal Lake, IL
-            {this.state.distance && <p>Distance: {this.state.distance}</p>}
-            {this.state.duration && <p>Duration: {this.state.duration}</p>}
+            Address: 1520 Carlemont Drive, Crystal Lake, IL
+            {this.state.duration && <p>About {this.state.duration}.</p>}
           </div>
         </form>
 

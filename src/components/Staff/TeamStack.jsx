@@ -18,10 +18,10 @@ export function TeamStack() {
   }, [seconds, current])
 
   return (
-    <div className="container">
+    <div className="container" style={{ 'grid-area': 'tea' }}>
       <div className="imgSlider">
         <div className={`slide${current === 1 ? ' active' : ''}`}>
-          <img src="/assets/team1.jpg" alt=':(' style={{'width':'100%', 'height':'auto', 'zoom':'25%', 'margin-top':'9vmin'}}/>
+          <img src="/assets/team1.jpg" alt=':(' style={{ 'width': '100%', 'height': 'auto', 'zoom': '25%', 'margin-top': '9vmin' }} />
         </div>
 
         <div className={`slide${current === 2 ? ' active' : ''}`}>
@@ -38,15 +38,15 @@ export function TeamStack() {
           <div className={`btn ${current === 3 ? 'active' : ''}`} onClick={() => setCurrent(3)}></div>
         </div>
 
-        <h1>Team</h1>
+        <h1>Our Team</h1>
       </div>
 
       <div className="containerText">
         <p>
-          Our staff has been with us for several years, refining essential skills during their tenure and working feverishly 
-          to set a standard of care and comfort that can't be found elsewhere. Our staff looks forward to helping each and 
+          Our staff has been with us for several years, refining essential skills during their tenure and working feverishly
+          to set a standard of care and comfort that can't be found elsewhere. Our staff looks forward to helping each and
           everyone of our patients rediscover their smiles.
-          
+
         </p>
       </div>
     </div>

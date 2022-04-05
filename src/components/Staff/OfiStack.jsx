@@ -18,7 +18,7 @@ export function OfiStack() {
   }, [seconds, current])
 
   return (
-    <div className="container">
+    <div className="container" style={{'grid-area':'ofi'}}>
       <div className="imgSlider">
         <div className={`slide${current === 1 ? ' active' : ''}`}>
           <img src="/assets/Ofi1.jpg" alt=':(' />

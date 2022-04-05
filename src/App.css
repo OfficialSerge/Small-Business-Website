@@ -1,5 +1,5 @@
 html {
-  background: #d8e1f1; 
+  background: #e6edfe; 
 }
 
 .webgl {
@@ -13,8 +13,8 @@ html {
 
 .app {
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 100vh 100vh 100vh 50vh;
+  grid-template-columns: 100vw;
+  grid-template-rows: 100vh 200vh 100vh 50vh;
   grid-template-areas: 
   'section1'
   'section2'
@@ -23,17 +23,24 @@ html {
   ;
 }
 
-.section1{
+.section.one {
   grid-area: section1;
+  display: flex;
+  justify-content: center;
 
 }
-.section2{
+.section.two{
   grid-area: section2;
-  align-items: baseline;
-  background: rgba(255, 255, 255, .15);
-  backdrop-filter: blur(5px);
+
+  display: grid;
+  grid-template-columns: repeat(6, calc(100%/6));
+  grid-template-rows: 1fr 1fr;
+  grid-template-areas: 
+  'ofi ofi tea tea adi adi'
+  'chr chr ren ren nan nan'
+  ;
 }
-.section3{
+.section.three{
   grid-area: section3;
   padding-top: 15vmin;
   display: flex;
@@ -41,38 +48,40 @@ html {
   justify-content: center;
 }
 
-.section4{
+.section.four{
   grid-area: section4;
 }
 section {
   display: flex;
   align-items: center;
   position: relative;
-  font-family: 'Cabin', sans-serif;
-  color: #6080a8;
-  text-transform: uppercase;
+  color: #0096CC;
   font-size: 1.25vw;
   padding-left: 2.5%;
   padding-right: 2.5%;
-}
-
-section:nth-child(odd) {
-  justify-content: flex-end;
 }
 
 @media only screen and (max-width: 550px) {
   .app {
     overflow: hidden;
     grid-template-columns: 100vw;
-    grid-template-rows: 100vh 300vh 100vh 100vh;
+    grid-template-rows: 100vh 800vh 100vh 100vh;
     grid-template-areas: 
     'section1'
     'section2'
     'section3'
     'section4'
   }
-  .section2 {
-    display: grid;
-    padding: 0 5vmin 0 5vmin;
+  .section.two {
+    padding: 0;
+    grid-template-columns: 100vw;
+    grid-template-rows: repeat(6, 100vh);
+    grid-template-areas: 
+    'ofi'
+    'adi'
+    'tea'
+    'chr'
+    'ren'
+    'nan'
   }
 } 

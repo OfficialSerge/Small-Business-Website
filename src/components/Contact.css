@@ -2,8 +2,9 @@
   display: flex;
   width: 100%;
   height: 100%;
+  font-size: 1.5vmax;
   padding: 50px 0 50px 0;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 .hours {
@@ -18,21 +19,22 @@
 form {
   height: 50%;
   width: 30%;
+  padding: 0 4vmax 0 0;
 }
 
 .form-group {
   display: flex;
-  padding: 0 15px 0 5px;
 }
 
 .form-group input, button {
   width: 100%;
-  margin: 1px 10px 19px 10px;
-  padding: 5px;
-  font-size: large;
-  font-family: Arial;
-  border-radius: 5px;
-  border: 2px solid black;
+  margin: 1vmin 0.5vmax 1vmin 0.5vmax;
+  padding: 1vmin;
+  font-size: 1vmax;
+  background: aliceblue;
+  border: 0.25vmin solid #0096CC;
+  border-radius: 1vmin;
+  color: #0096CC;
 }
 
 .navigation {
@@ -55,7 +57,7 @@ form {
   .hours {
     width: 90vmin;
     display: grid;
-    padding: 0;
+    padding: 10px 0 10px 0;
     font-size: 2.25vh;
   }
   .hours h2, p {
@@ -63,13 +65,22 @@ form {
   }
   .mapDiv form {
     display: grid;
-    font-size: 2.25vh;
+    font-size: 2.25vmax;
     width: 90vmin;
+    padding: 0;
+    height: 90%;
   }
   .form-group {
     margin: 3px auto;
     padding: 0;
     width: inherit;
+  }
+  .form-group input, button {
+    font-size: 2vmax;
+  }
+  .navigation {
+    display: grid;  
+    font-size: 3vmax;
   }
   .googleMap {
     width: 90vmin;

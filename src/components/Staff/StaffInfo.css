@@ -5,8 +5,7 @@
   height: 85vmin;
   width: 30vmax;
   border-radius: 5px;
-  background: rgba(255, 255, 255, .85);
-  font-family: 'Kaushan Script', cursive;
+  background: #90d1efa6;
 }
 
 .container p {
@@ -17,9 +16,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 2.5vmin;
   color: rgb(45, 45, 54);
-  padding: 25px;
+  padding: 3rem;
 }
 
 .imgSlider {
@@ -31,9 +30,9 @@
 }
 
 .imgSlider h1 {
-  font-size: 60px;
+  font-size: 5vmin;
   position: absolute;
-  top: 35vmin;
+  top: 37vmin;
   margin: 0;
   color: aliceblue;
 }
@@ -60,8 +59,8 @@
 }
 
 .btn.active {
-  background: white;
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+  background: rgba(207, 228, 255, 0.76);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.336);
   transition: 1s;
 }
 
@@ -76,10 +75,10 @@
 }
 
 .btn {
-  background: rgba(26, 0, 0, 0.5);
-  width: 10px;
-  height: 10px;
-  margin: 10px;
+  background: rgba(255, 255, 255, 0.719);
+  width: 1vmin;
+  height: 1vmin;
+  margin: 1vmin;
   border-radius: 50%;
   cursor: pointer;
 }
@@ -91,16 +90,27 @@
   }
   .containerText {
     height: 45vmax;
-    padding: 0 10px 0 10px;
+    padding: 2rem;
+    font-size: 2.5vmax;
   }
   .imgSlider {
     width: 90vmin;
     height: 45vmax;
+    margin: 0;
+  }
+  .imgSlider .btnContainer {
+    margin: 10px 0 10px 0;
   }
   .slide img {
     height: 45vmax;
   }
   .imgSlider h1 {
-    top: 35vmax;
+    top: 40vmax;
+    font-size: 4.5vmax;
+  }
+  .btn {
+    width: 1.25vmax;
+    height: 1.25vmax;
+    margin: 0 2vmax 0 2vmax;
   }
 }

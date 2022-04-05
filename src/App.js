@@ -1,333 +1,720 @@
+// FIREBASE
+import { initializeApp } from "firebase/app"
+import { getAnalytics } from "firebase/analytics"
+
+// CSS
 import './App.css'
 
 // MODELS
-import torusGradient from './assets/5.jpg'
-import blue from './assets/Blue.glb'
-import green from './assets/Green.glb'
-import pink from './assets/Pink.glb'
+import redLoli from './models/red.glb'
+import tealLoli from './models/teal.glb'
+import blueLoli from './models/blue.glb'
+import yellowLoli from './models/yellow.glb'
+import blueGum from './models/blueGum.glb'
+import purpleGum from './models/purpleGum.glb'
+import orangeGum from './models/orangeGum.glb'
+import greenGum from './models/greenGum.glb'
 
 // THREEJS
 import * as THREE from "three"
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import * as dat from 'lil-gui'
-import gsap from 'gsap'
 
 // REACT
 import React, { Component } from "react"
+import { Welcome } from './components/Welcome'
 import { Navbar } from './components/Navbar'
 import { Contact } from './components/Contact'
 import { StaffInfo } from './components/Staff/StaffInfo'
 import { List } from './components/List'
 import { Accordion } from './components/Accordion'
 
-const objectsDistance = 4
-const parameters = {
-  materialColor: '#ffeded'
+// INIT FIREBASE
+const firebaseConfig = {
+  apiKey: "AIzaSyAf-_k0N9KwJjvkzeEZh9qWVXYEs9cdKoI",
+  authDomain: "rndc-341820.firebaseapp.com",
+  projectId: "rndc-341820",
+  storageBucket: "rndc-341820.appspot.com",
+  messagingSenderId: "111844360169",
+  appId: "1:111844360169:web:c57602e7138835cbc8d578",
+  measurementId: "G-Q2Z6LMRX2X"
 }
+
+const app = initializeApp(firebaseConfig)
+const analytics = getAnalytics(app)
 
 class App extends Component {
   constructor(props) {
     super(props)
     this.appRef = React.createRef()
     this.state = {
-      width: 0,
-      height: 0,
-      selected: null
+      scrollTop: true,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      cursorX: 0,
+      cursorY: 0,
+      selected: null, // USED WITH LIST.JSX
+      toggleWelcome: true
     }
   }
 
   componentDidMount = () => {
-    // Cheat to always load at the top of the page on refresh
-    window.location.href = 'http://localhost:3000/#home'
-
     this.sceneSetup()
     this.assetSetup()
 
     window.addEventListener('mousemove', this.handleMouseMove)
     window.addEventListener('resize', this.handleWindowResize)
     window.addEventListener('scroll', this.handleScroll)
+    window.addEventListener('click', this.handleClick)
 
-    this.addCustomSceneObjects()
     this.startAnimationLoop()
-    //this.guiSetup()
   }
 
   componentWillUnmount = () => {
     window.removeEventListener('resize', this.handleWindowResize)
     window.removeEventListener('scroll', this.handleScroll)
     window.removeEventListener('mousemove', this.handleMouseMove)
+    window.removeEventListener('click', this.handleClick)
     window.cancelAnimationFrame(this.requestID)
-  }
-
-  // GUI TO HELP WITH DESIGN
-  guiSetup = () => {
-    // Debug
-    this.gui = new dat.GUI()
-
-    // Lighting
-    this.gui.add(this.directionalLight, 'intensity').min(0).max(1).step(0.1).name('Directional Light')
-    this.gui.add(this.ambientLight, 'intensity').min(0).max(1).step(0.1).name('Ambient Light')
-    this.gui.add(this.directionalLight.position, 'x').min(- 5).max(5).step(0.1)
-    this.gui.add(this.directionalLight.position, 'y').min(- 5).max(5).step(0.1)
-    this.gui.add(this.directionalLight.position, 'z').min(- 5).max(5).step(0.1)
-
-    // Light Helper
-    const directionalLightHelper = new THREE.CameraHelper(this.directionalLight.shadow.camera)
-    this.scene.add(directionalLightHelper)
   }
 
   // DYNAMICALLY CHANGE GRID-TEMPLATE-ROWS
   componentDidUpdate = () => {
+    // adjust layout per screen size
     if (this.state.width < 550) {
       if (this.state.selected != null) {
-        return this.appRef.current.style['grid-template-rows'] = '100vh 300vh 130vh 100vh'
+        return this.appRef.current.style['grid-template-rows'] = '100vh 600vh 130vh 100vh'
       }
-      return this.appRef.current.style['grid-template-rows'] = '100vh 300vh 100vh 100vh'
+      return this.appRef.current.style['grid-template-rows'] = '100vh 600vh 100vh 100vh'
+    }
+
+    // remove event listeners for when we scroll and don't need them
+    if (!this.state.scrollTop) {
+      window.removeEventListener('click', this.handleClick)
+      window.removeEventListener('mousemove', this.handleMouseMove)
+
+    } else {
+      window.addEventListener('click', this.handleClick)
+      window.addEventListener('mousemove', this.handleMouseMove)
+
     }
   }
 
   // MANAGE SELECTED STATE
   handleSelectedChange = (i) => {
-    // Open or close a selected blind
     if (this.state.selected === i) {
       return this.setState({ selected: null })
     }
-    // Open blind and close another at same time
+
     this.setState({ selected: i })
+  }
+
+  // MANAGE TOGGLEWELCOME STATE
+  handleWelcomeChange = (boolean) => {
+    this.state.toggleWelcome = boolean
   }
 
   // LOAD ASSETS
   assetSetup = () => {
-    // Gradient map for torus
-    const loader = new THREE.TextureLoader()
-    this.gradient = loader.load(torusGradient,
-      undefined, // OnLoad
-      undefined, // OnProgress
-      function (err) {
-        console.log(err)
+    // INIT SHADERS
+    const pinkMaterial = new THREE.ShaderMaterial({
+      vertexShader: `
+        uniform float offset;
+
+        void main() {
+          vec4 pos = modelViewMatrix * vec4( position + normal * offset, 1.0 );
+          gl_Position = projectionMatrix * pos;
+        }
+      `,
+      fragmentShader: `
+        precision mediump float;
+        uniform vec3 uColor;
+
+        void main() {
+          gl_FragColor = vec4( uColor, 1.0 );
+        }
+      `,
+      uniforms: {
+        offset: { type: 'f', value: 0.02 },
+        uColor: { value: new THREE.Color(0xf9b6ed) } // We send this color data to the fragment
       }
-    )
-    this.gradient.magFilter = THREE.NearestFilter
+    })
+    const blueMaterial = new THREE.ShaderMaterial({
+      vertexShader: `
+        uniform float offset;
 
-    // Load Candy
+        void main() {
+          vec4 pos = modelViewMatrix * vec4( position + normal * offset, 1.0 );
+          gl_Position = projectionMatrix * pos;
+        }
+      `,
+      fragmentShader: `
+        precision mediump float;
+        uniform vec3 uColor;
+
+        void main() {
+          gl_FragColor = vec4( uColor, 1.0 );
+        }
+      `,
+      uniforms: {
+        offset: { type: 'f', value: 0.02 },
+        uColor: { value: new THREE.Color(0xa5cffa) } // We send this color data to the fragment
+      }
+    })
+    const yellowMaterial = new THREE.ShaderMaterial({
+      vertexShader: `
+        uniform float offset;
+
+        void main() {
+          vec4 pos = modelViewMatrix * vec4( position + normal * offset, 1.0 );
+          gl_Position = projectionMatrix * pos;
+        }
+      `,
+      fragmentShader: `
+        precision mediump float;
+        uniform vec3 uColor;
+
+        void main() {
+          gl_FragColor = vec4( uColor, 1.0 );
+        }
+      `,
+      uniforms: {
+        offset: { type: 'f', value: 0.02 },
+        uColor: { value: new THREE.Color(0xffe8a8) } // We send this color data to the fragment
+      }
+    })
+    const purpleMaterial = new THREE.ShaderMaterial({
+      vertexShader: `
+        uniform float offset;
+
+        void main() {
+          vec4 pos = modelViewMatrix * vec4( position + normal * offset, 1.0 );
+          gl_Position = projectionMatrix * pos;
+        }
+      `,
+      fragmentShader: `
+        precision mediump float;
+        uniform vec3 uColor;
+
+        void main() {
+          gl_FragColor = vec4( uColor, 1.0 );
+        }
+      `,
+      uniforms: {
+        offset: { type: 'f', value: 0.02 },
+        uColor: { value: new THREE.Color(0xd699ff) } // We send this color data to the fragment
+      }
+    })
+    const orangeMaterial = new THREE.ShaderMaterial({
+      vertexShader: `
+        uniform float offset;
+
+        void main() {
+          vec4 pos = modelViewMatrix * vec4( position + normal * offset, 1.0 );
+          gl_Position = projectionMatrix * pos;
+        }
+      `,
+      fragmentShader: `
+        precision mediump float;
+        uniform vec3 uColor;
+
+        void main() {
+          gl_FragColor = vec4( uColor, 1.0 );
+        }
+      `,
+      uniforms: {
+        offset: { type: 'f', value: 0.02 },
+        uColor: { value: new THREE.Color(0xffbf8f) } // We send this color data to the fragment
+      }
+    })
+    const greenMaterial = new THREE.ShaderMaterial({
+      vertexShader: `
+        uniform float offset;
+
+        void main() {
+          vec4 pos = modelViewMatrix * vec4( position + normal * offset, 1.0 );
+          gl_Position = projectionMatrix * pos;
+        }
+      `,
+      fragmentShader: `
+        precision mediump float;
+        uniform vec3 uColor;
+
+        void main() {
+          gl_FragColor = vec4( uColor, 1.0 );
+        }
+      `,
+      uniforms: {
+        offset: { type: 'f', value: 0.02 },
+        uColor: { value: new THREE.Color(0x9aeb7c) } // We send this color data to the fragment
+      }
+    })
+
+    // INIT GLTFLOADER
     const gltfLoader = new GLTFLoader()
-    this.blueCandy1 = null
-    gltfLoader.loadAsync(blue).then((gltf) => {
-      this.blueCandy1 = gltf.scene
-      this.blueCandy1.scale.set(0.4, 0.4, 0.4)
-      this.blueCandy1.position.set(3, -0.5, 0)
-      this.scene.add(this.blueCandy1)
-    })
-    this.blueCandy2 = null
-    gltfLoader.loadAsync(blue).then((gltf) => {
-      this.blueCandy2 = gltf.scene
-      this.blueCandy2.scale.set(0.4, 0.4, 0.4)
-      this.blueCandy2.position.set(-2, 0, 0)
-      this.scene.add(this.blueCandy2)
-    })
-    this.blueCandy3 = null
-    gltfLoader.loadAsync(blue).then((gltf) => {
-      this.blueCandy3 = gltf.scene
-      this.blueCandy3.scale.set(0.5, 0.5, 0.5)
-      this.blueCandy3.position.set(0, 2, 0)
-      this.scene.add(this.blueCandy3)
-    })
+    this.objectsToTest = []
 
-    this.pinkCandy1 = null
-    gltfLoader.loadAsync(pink).then((gltf) => {
-      this.pinkCandy1 = gltf.scene
-      this.pinkCandy1.scale.set(0.4, 0.4, 0.4)
-      this.pinkCandy1.position.set(1, -1, 0)
-      this.scene.add(this.pinkCandy1)
-    })
+    // LOAD MODELS MOBILE RES
+    if (this.state.width < 550) {
+      gltfLoader.loadAsync(redLoli).then((gltf) => {
+        this.redLoli = gltf.scene
+        this.redLoli.scale.set(0.4, 0.4, 0.4)
+        this.redLoli.position.set(-0.75, -0.5, 1)
 
-    this.greenCandy1 = null
-    gltfLoader.loadAsync(green).then((gltf) => {
-      this.greenCandy1 = gltf.scene
-      this.greenCandy1.scale.set(0.4, 0.4, 0.4)
-      this.greenCandy1.position.set(-4, 1.5, 0)
-      this.scene.add(this.greenCandy1)
-    })
+        this.redShader = new THREE.Mesh(this.redLoli.children[0].geometry, pinkMaterial)
+        this.redShader.scale.set(0.4, 0.4, 0.4)
+        this.redShader.position.set(-0.75, -0.5, 1)
+        this.redShader.material.depthWrite = false
+
+        this.scene.add(this.redLoli)
+        this.outScene.add(this.redShader)
+        this.objectsToTest.push(this.redLoli.children[0])
+      })
+      gltfLoader.loadAsync(yellowLoli).then((gltf) => {
+        this.yellowLoli = gltf.scene
+        this.yellowLoli.scale.set(0.4, 0.4, 0.4)
+        this.yellowLoli.position.set(1, 1.75, -0.5)
+
+        this.yellowShader = new THREE.Mesh(this.yellowLoli.children[0].geometry, yellowMaterial)
+        this.yellowShader.scale.set(0.4, 0.4, 0.4)
+        this.yellowShader.position.set(1, 1.75, -0.5)
+        this.yellowShader.material.depthWrite = false
+
+        this.scene.add(this.yellowLoli)
+        this.scene.add(this.yellowShader)
+        this.objectsToTest.push(this.yellowLoli.children[0])
+      })
+      gltfLoader.loadAsync(orangeGum).then((gltf) => {
+        this.orangeGum1 = gltf.scene
+        this.orangeGum1.position.set(-2, 3, -8)
+        this.orangeGum1.rotation.x = Math.PI / 16
+        this.orangeGum1.rotation.z = -Math.PI / 8
+
+        this.orangeShader1 = new THREE.Mesh(this.orangeGum1.children[0].geometry, orangeMaterial)
+        this.orangeShader1.scale.set(0.47, 0.47, 0.47)
+        this.orangeShader1.position.set(-2, 3, -8)
+        this.orangeShader1.material.depthWrite = false
+
+        this.scene.add(this.orangeGum1)
+        this.outScene.add(this.orangeShader1)
+        this.objectsToTest.push(this.orangeGum1.children[0])
+      })
+      gltfLoader.loadAsync(blueGum).then((gltf) => {
+        this.blueGum1 = gltf.scene
+        this.blueGum1.position.set(0.75, -0.5, -8)
+        this.blueGum1.rotation.x = Math.PI / 16
+        this.blueGum1.rotation.z = Math.PI / 8
+
+        this.blueGumShader1 = new THREE.Mesh(this.blueGum1.children[0].geometry, blueMaterial)
+        this.blueGumShader1.scale.set(0.47, 0.47, 0.47)
+        this.blueGumShader1.position.set(0.75, -0.5, -8)
+        this.blueGumShader1.material.depthWrite = false
+
+        this.scene.add(this.blueGum1)
+        this.outScene.add(this.blueGumShader1)
+        this.objectsToTest.push(this.blueGum1.children[0])
+      })
+      gltfLoader.loadAsync(greenGum).then((gltf) => {
+        this.greenGum2 = gltf.scene
+        this.greenGum2.position.set(3, -3, -8)
+        this.greenGum2.rotation.x = Math.PI / 8
+        this.greenGum2.rotation.z = -Math.PI / 16
+
+        this.greenShader2 = new THREE.Mesh(this.greenGum2.children[0].geometry, greenMaterial)
+        this.greenShader2.scale.set(0.47, 0.47, 0.47)
+        this.greenShader2.position.set(3, -3, -8)
+        this.greenShader2.material.depthWrite = false
+
+        this.scene.add(this.greenGum2)
+        this.outScene.add(this.greenShader2)
+        this.objectsToTest.push(this.greenGum2.children[0])
+      })
+
+      // DESKTOP RES
+    } else {
+      gltfLoader.loadAsync(yellowLoli).then((gltf) => {
+        this.yellowLoli = gltf.scene
+        this.yellowLoli.scale.set(0.4, 0.4, 0.4)
+        this.yellowLoli.position.set(1, 1.75, -0.5)
+
+        this.yellowShader = new THREE.Mesh(this.yellowLoli.children[0].geometry, yellowMaterial)
+        this.yellowShader.scale.set(0.4, 0.4, 0.4)
+        this.yellowShader.position.set(1, 1.75, -0.5)
+        this.yellowShader.material.depthWrite = false
+
+        this.scene.add(this.yellowLoli)
+        this.scene.add(this.yellowShader)
+        this.objectsToTest.push(this.yellowLoli.children[0])
+      })
+      gltfLoader.loadAsync(redLoli).then((gltf) => {
+        this.redLoli = gltf.scene
+        this.redLoli.scale.set(0.4, 0.4, 0.4)
+        this.redLoli.position.set(-0.75, -0.5, 1)
+
+        this.redShader = new THREE.Mesh(this.redLoli.children[0].geometry, pinkMaterial)
+        this.redShader.scale.set(0.4, 0.4, 0.4)
+        this.redShader.position.set(-0.75, -0.5, 1)
+        this.redShader.material.depthWrite = false
+
+        this.scene.add(this.redLoli)
+        this.outScene.add(this.redShader)
+        this.objectsToTest.push(this.redLoli.children[0])
+      })
+      gltfLoader.loadAsync(tealLoli).then((gltf) => {
+        this.tealLoli = gltf.scene
+        this.tealLoli.scale.set(0.4, 0.4, 0.4)
+        this.tealLoli.position.set(3.5, -0.5, 0)
+
+        this.tealShader = new THREE.Mesh(this.tealLoli.children[0].geometry, blueMaterial)
+        this.tealShader.scale.set(0.4, 0.4, 0.4)
+        this.tealShader.position.set(3.5, -0.5, 0)
+        this.tealShader.material.depthWrite = false
+
+        this.scene.add(this.tealLoli)
+        this.outScene.add(this.tealShader)
+        this.objectsToTest.push(this.tealLoli.children[0])
+      })
+      gltfLoader.loadAsync(blueLoli).then((gltf) => {
+        this.blueLoli = gltf.scene
+        this.blueLoli.scale.set(0.4, 0.4, 0.4)
+        this.blueLoli.position.set(-3, 1, 1)
+
+        this.blueShader = new THREE.Mesh(this.blueLoli.children[0].geometry, blueMaterial)
+        this.blueShader.scale.set(0.4, 0.4, 0.4)
+        this.blueShader.position.set(-3, 1, 1)
+        this.blueShader.material.depthWrite = false
+
+        this.scene.add(this.blueLoli)
+        this.outScene.add(this.blueShader)
+        this.objectsToTest.push(this.blueLoli.children[0])
+      })
+      gltfLoader.loadAsync(blueGum).then((gltf) => {
+        this.blueGum1 = gltf.scene
+        this.blueGum1.position.set(0.75, -0.5, -8)
+        this.blueGum1.rotation.x = Math.PI / 16
+        this.blueGum1.rotation.z = Math.PI / 8
+
+        this.blueGumShader1 = new THREE.Mesh(this.blueGum1.children[0].geometry, blueMaterial)
+        this.blueGumShader1.scale.set(0.47, 0.47, 0.47)
+        this.blueGumShader1.position.set(0.75, -0.5, -8)
+        this.blueGumShader1.material.depthWrite = false
+
+        this.scene.add(this.blueGum1)
+        this.outScene.add(this.blueGumShader1)
+        this.objectsToTest.push(this.blueGum1.children[0])
+      })
+      gltfLoader.loadAsync(purpleGum).then((gltf) => {
+        this.purpleGum1 = gltf.scene
+        this.purpleGum1.position.set(7, 3, -8)
+        this.purpleGum1.rotation.x = Math.PI / 16
+        this.purpleGum1.rotation.z = Math.PI / 8
+
+        this.purpleShader1 = new THREE.Mesh(this.purpleGum1.children[0].geometry, purpleMaterial)
+        this.purpleShader1.scale.set(0.47, 0.47, 0.47)
+        this.purpleShader1.position.set(7, 3, -8)
+        this.purpleShader1.material.depthWrite = false
+
+        this.scene.add(this.purpleGum1)
+        this.outScene.add(this.purpleShader1)
+        this.objectsToTest.push(this.purpleGum1.children[0])
+      })
+      gltfLoader.loadAsync(orangeGum).then((gltf) => {
+        this.orangeGum1 = gltf.scene
+        this.orangeGum1.position.set(-2, 3, -8)
+        this.orangeGum1.rotation.x = Math.PI / 16
+        this.orangeGum1.rotation.z = -Math.PI / 8
+
+        this.orangeShader1 = new THREE.Mesh(this.orangeGum1.children[0].geometry, orangeMaterial)
+        this.orangeShader1.scale.set(0.47, 0.47, 0.47)
+        this.orangeShader1.position.set(-2, 3, -8)
+        this.orangeShader1.material.depthWrite = false
+
+        this.scene.add(this.orangeGum1)
+        this.outScene.add(this.orangeShader1)
+        this.objectsToTest.push(this.orangeGum1.children[0])
+      })
+      gltfLoader.loadAsync(greenGum).then((gltf) => {
+        this.greenGum1 = gltf.scene
+        this.greenGum1.position.set(-7, -2, -8)
+        this.greenGum1.rotation.x = Math.PI / 8
+        this.greenGum1.rotation.z = -Math.PI / 16
+
+        this.greenShader1 = new THREE.Mesh(this.greenGum1.children[0].geometry, greenMaterial)
+        this.greenShader1.scale.set(0.47, 0.47, 0.47)
+        this.greenShader1.position.set(-7, -2, -8)
+        this.greenShader1.material.depthWrite = false
+
+        this.scene.add(this.greenGum1)
+        this.outScene.add(this.greenShader1)
+        this.objectsToTest.push(this.greenGum1.children[0])
+      })
+      gltfLoader.loadAsync(greenGum).then((gltf) => {
+        this.greenGum2 = gltf.scene
+        this.greenGum2.position.set(3, -3, -8)
+        this.greenGum2.rotation.x = Math.PI / 8
+        this.greenGum2.rotation.z = -Math.PI / 16
+
+        this.greenShader2 = new THREE.Mesh(this.greenGum2.children[0].geometry, greenMaterial)
+        this.greenShader2.scale.set(0.47, 0.47, 0.47)
+        this.greenShader2.position.set(3, -3, -8)
+        this.greenShader2.material.depthWrite = false
+
+        this.scene.add(this.greenGum2)
+        this.outScene.add(this.greenShader2)
+        this.objectsToTest.push(this.greenGum2.children[0])
+      })
+    }
   }
 
-  // THREEJS SETUP
+  // THREEJS + GSAP
   sceneSetup = () => {
-    this.width = this.mount.clientWidth
-    this.height = this.mount.clientHeight
-
-    this.setState({
-      width: this.width,
-      height: this.height
-    })
-
-    this.cursor = {
-      x: this.mount.clientX,
-      y: this.mount.clientY
-    }
-
-    // Scrolling over site sections
-    this.currentSection = 0
-
-    // Scene, Camera, Renderer
+    // SCENE
     this.scene = new THREE.Scene()
-    this.camera = new THREE.PerspectiveCamera(35, this.width / this.height, 0.1, 100)
+    this.outScene = new THREE.Scene()
+
+    // CAMERA
+    this.camera = new THREE.PerspectiveCamera(35, this.state.width / this.state.height, 0.1, 100)
     this.camera.position.z = 8
     this.scene.add(this.camera)
-    this.renderer = new THREE.WebGLRenderer({ alpha: true })
-    this.renderer.setSize(this.width, this.height)
-    this.renderer.shadowMap.enabled = true
-    this.renderer.outputEncoding = THREE.sRGBEncoding // must configure for gltf
-    this.mount.appendChild(this.renderer.domElement) // mount using React ref
 
-    // Clock: used for controling animation
+    // LIGHTS
+    this.ambientLight = new THREE.AmbientLight(0xffffff, 0.9)
+    this.scene.add(this.ambientLight)
+    
+    // RENDERER 
+    this.renderer = new THREE.WebGLRenderer({
+      powerPreference: "high-performance",
+      antialias: true,
+      stencil: false
+    })
+
+    this.renderer.outputEncoding = THREE.sRGBEncoding
+    this.renderer.autoClear = false
+    this.renderer.setSize(this.state.width, this.state.height)
+    this.mount.appendChild(this.renderer.domElement)
+
+    // RAYCASTER
+    this.raycastor = new THREE.Raycaster()
+
+    // CLOCK
     this.clock = new THREE.Clock()
     this.previousTime = 0
   }
 
-  // GEOMETRY SETUP
-  addCustomSceneObjects = () => {
-    // Doughnut
-    // const material = new THREE.MeshToonMaterial({ color: parameters.materialColor, gradientMap: this.gradient })
-    // this.torus = new THREE.Mesh(new THREE.TorusGeometry(1, 0.4, 16, 60), material);
-    // this.torus.position.x = 2
-    // this.torus.castShadow = true
-    // this.scene.add(this.torus)
-
-    // Plane
-    // this.plane = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.MeshStandardMaterial({ color: '#d8e1f1' }))
-    // this.plane.rotation.set(-Math.PI / 2.2, 0, 0)
-    // this.plane.position.y = -objectsDistance + 2.5
-    // this.plane.receiveShadow = true
-    // this.scene.add(this.plane)
-
-    // Particles
-    const count = 200, positions = new Float32Array(count * 3)
-    for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 10
-      positions[i * 3 + 1] = objectsDistance * 0.5 - Math.random() * objectsDistance * 3
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 10
-    }
-
-    const particlesGeo = new THREE.BufferGeometry()
-    particlesGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-
-    const particlesMaterial = new THREE.PointsMaterial({ color: '#6080a8', sizeAttenuation: true, size: 0.05 })
-    this.particles = new THREE.Points(particlesGeo, particlesMaterial)
-    this.scene.add(this.particles)
-
-    // Lighting
-    this.ambientLight = new THREE.AmbientLight(0xffffff, 0.6)
-    this.directionalLight = new THREE.DirectionalLight(0xffffff, 0.5)
-    this.directionalLight.position.set(2.5, 3, 2)
-    this.scene.add(this.directionalLight, this.ambientLight)
-
-    this.directionalLight.castShadow = true // tell light to cast shadow
-    this.directionalLight.shadow.mapSize.width = 512 * 5 // this is the shadowmap resolution
-    this.directionalLight.shadow.mapSize.height = 512
-
-    this.directionalLight.shadow.camera.near = 1 // how close to the light do shadows start
-    this.directionalLight.shadow.camera.far = 5 // how far from the camera will we allow shadow renders
-
-    this.directionalLight.shadow.camera.top = 1.5 // by shrinking the dimensions of the shadow map we improve picture quality
-    this.directionalLight.shadow.camera.bottom = -1.5 // the shadowmap resolution stays the same so it just looks better
-    this.directionalLight.shadow.camera.left = -5
-    this.directionalLight.shadow.camera.right = 5
-
-    this.directionalLight.shadow.radius = 20 // control shadow edge blur
-    this.directionalLight.shadow.blurSamples = 5
-  };
-
   // ANIMATION LOOP
   startAnimationLoop = () => {
-    // Time stuff
+    // GET DELTA TIME
     const elapsedTime = this.clock.getElapsedTime()
     const deltaTime = elapsedTime - this.previousTime
     this.previousTime = elapsedTime
 
-    // Animate torus
-    // this.torus.rotation.x += deltaTime * 0.1
-    // this.torus.rotation.y += deltaTime * 0.12
+    // PARALLAX EFFECT
+    this.camera.position.x += (this.state.cursorX - this.camera.position.x) * deltaTime
+    this.camera.position.y += (-this.state.cursorY - this.camera.position.y) * deltaTime
 
-    // Particle movement
-    this.particles.position.y = window.scrollY / this.height * objectsDistance
+    // CANDY ROTATIONS
+    this.yellowLoli && this.yellowLoli.rotation.set(0, this.yellowLoli.rotation.y += deltaTime * 0.4, Math.PI / 16)
+    this.redLoli && this.redLoli.rotation.set(-Math.PI / 8, this.redLoli.rotation.y += deltaTime * 0.35, 0)
+    this.tealLoli && this.tealLoli.rotation.set(-Math.PI / 16, this.tealLoli.rotation.y -= deltaTime * 0.3, Math.PI / 12)
+    this.blueLoli && this.blueLoli.rotation.set(Math.PI / 4, this.blueLoli.rotation.y -= deltaTime * 0.3, 0)
 
-    // Parallax effect
-    const parallaxX = this.cursor.x ? this.cursor.x : 0
-    const parallaxY = this.cursor.y ? -this.cursor.y : 0
-    this.camera.position.x += (parallaxX - this.camera.position.x) * deltaTime
-    this.camera.position.y += (parallaxY - this.camera.position.y) * deltaTime
+    // GUMDROP ROTATIONS
+    this.blueGum1 && this.blueGum1.rotation.set(this.blueGum1.rotation.x, this.blueGum1.rotation.y += deltaTime * 0.75, this.blueGum1.rotation.z)
+    this.purpleGum1 && this.purpleGum1.rotation.set(this.purpleGum1.rotation.x, this.purpleGum1.rotation.y -= deltaTime * 0.66, this.purpleGum1.rotation.z)
+    this.orangeGum1 && this.orangeGum1.rotation.set(this.orangeGum1.rotation.x, this.orangeGum1.rotation.y -= deltaTime * 0.9, this.orangeGum1.rotation.z)
+    this.greenGum1 && this.greenGum1.rotation.set(this.greenGum1.rotation.x, this.greenGum1.rotation.y += deltaTime, this.greenGum1.rotation.z)
+    this.greenGum2 && this.greenGum2.rotation.set(this.greenGum2.rotation.x, this.greenGum2.rotation.y += deltaTime, this.greenGum2.rotation.z)
 
-    // CANDY
-    this.blueCandy1 && this.blueCandy1.rotation.set(-Math.PI / 1.5, 0, this.blueCandy1.rotation.z += deltaTime * 0.4)
-    this.blueCandy2 && this.blueCandy2.rotation.set(-Math.PI / 3, 0, this.blueCandy2.rotation.z += deltaTime * 0.25)
-    this.blueCandy3 && this.blueCandy3.rotation.set(-Math.PI / 4, Math.PI / 8, this.blueCandy3.rotation.z += deltaTime * 0.5)
-    this.pinkCandy1 && this.pinkCandy1.rotation.set(-Math.PI / 1.5, Math.PI / 8, this.pinkCandy1.rotation.z += deltaTime * 0.3)
-    this.greenCandy1 && this.greenCandy1.rotation.set(-Math.PI / 1.5, Math.PI / 8, this.greenCandy1.rotation.z += deltaTime * 0.35)
+    // UPDATE SHADERS 
+    this.yellowShader && this.yellowShader.rotation.set(this.yellowLoli.rotation.x, this.yellowLoli.rotation.y, this.yellowLoli.rotation.z)
+    this.redShader && this.redShader.rotation.set(this.redLoli.rotation.x, this.redLoli.rotation.y, this.redLoli.rotation.z)
+    this.tealShader && this.tealShader.rotation.set(this.tealLoli.rotation.x, this.tealLoli.rotation.y, this.tealLoli.rotation.z)
+    this.blueShader && this.blueShader.rotation.set(this.blueLoli.rotation.x, this.blueLoli.rotation.y, this.blueLoli.rotation.z)
 
-    // Make room for contact info
-    // if (window.scrollY > 1562) {
-    //   this.torus.position.y = (window.scrollY - 1562) / this.height * objectsDistance
-    //   this.plane.position.y = (-objectsDistance + 2.5) + ((window.scrollY - 1562) / this.height * objectsDistance)
-    //   this.directionalLight.position.y = 3 + ((window.scrollY - 1562) / this.height * objectsDistance)
-    // }
+    this.blueGumShader1 && this.blueGumShader1.rotation.set(this.blueGum1.rotation.x, this.blueGum1.rotation.y, this.blueGum1.rotation.z)
+    this.purpleShader1 && this.purpleShader1.rotation.set(this.purpleGum1.rotation.x, this.purpleGum1.rotation.y, this.purpleGum1.rotation.z)
+    this.orangeShader1 && this.orangeShader1.rotation.set(this.orangeGum1.rotation.x, this.orangeGum1.rotation.y, this.orangeGum1.rotation.z)
+    this.greenShader1 && this.greenShader1.rotation.set(this.greenGum1.rotation.x, this.greenGum1.rotation.y, this.greenGum1.rotation.z)
+    this.greenShader2 && this.greenShader2.rotation.set(this.greenGum2.rotation.x, this.greenGum2.rotation.y, this.greenGum2.rotation.z)
 
-    this.renderer.render(this.scene, this.camera);
-    this.requestID = window.requestAnimationFrame(this.startAnimationLoop);
+    // RENDER SCENE
+    this.renderer.render(this.outScene, this.camera)
+    this.renderer.render(this.scene, this.camera)
+
+    this.requestID = window.requestAnimationFrame(this.startAnimationLoop)
   };
 
   // HANDLE EVENT
   handleWindowResize = () => {
-    // Update sizes
-    this.width = window.innerWidth
-    this.height = window.innerHeight
-
     this.setState({
       width: window.innerWidth,
       height: window.innerHeight
     })
 
-    // Update camera
-    this.camera.aspect = this.width / this.height
+    // ASPECT RATIO 
+    this.camera.aspect = this.state.width / this.state.height
     this.camera.updateProjectionMatrix()
 
-    // Update renderer
-    this.renderer.setSize(this.width, this.height)
+    // RENDERER SIZE
+    this.renderer.setSize(this.state.width, this.state.height)
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
   };
 
   // HANDLE EVENT
   handleScroll = () => {
-    const scroll = window.scrollY
-    const section = Math.round(scroll / this.height)
+    if (window.scrollY < 600) {
+      this.setState({
+        scrollTop: true
+      })
 
-    // Handle gsap animations
-    if (section !== this.currentSection) {
-      this.currentSection = section
-
-      // Start timeline
-      // const timeLine = gsap.timeline()
-      // timeLine
-      //   .to( // Apply translation
-      //     this.torus.position, 
-      //     {
-      //       duration: 7.5,
-      //       ease: 'elastic',
-      //       x: section % 2 === 0 ? 2 : -2
-      //     }
-      //   ).to( // Apply rotation
-      //     this.torus.rotation,
-      //     {
-      //       duration: 1.5,
-      //       y: '+=8'
-      //     }, '-=7.5' // use position arg to control overlap    
-      //   )
+    } else {
+      this.setState({
+        scrollTop: false
+      })
     }
   }
 
   // HANDLE EVENT
   handleMouseMove = (e) => {
-    this.cursor.x = e.clientX / this.width - 0.5
-    this.cursor.y = e.clientY / this.height - 0.5
+    this.setState({
+      cursorX: e.clientX / this.state.width - 0.5,
+      cursorY: e.clientY / this.state.height - 0.5
+    })
+  }
+
+  // HANDLE EVENT
+  handleClick = (e) => {
+    // MOUSE OBJ FOR RAYCASTER
+    const mouse = {
+      x: e.clientX / this.state.width * 2 - 1,
+      y: - (e.clientY / this.state.height) * 2 + 1
+    }
+
+    // CALCULATE INTERSECTIONS
+    this.raycastor.setFromCamera(mouse, this.camera)
+    const intersects = this.raycastor.intersectObjects(this.objectsToTest, false)
+
+    // GET INTERSECTION OBJ
+    let currentIntersect = null
+    if (intersects.length) {
+      currentIntersect = intersects[0].object
+    }
+
+    // SET ANIMATION TARGET
+    let targetCandy = null, targetGum = null, shader = null
+    if (currentIntersect) {
+      switch (currentIntersect) {
+        case this.yellowLoli.children[0]:
+          targetCandy = this.yellowLoli
+          shader = this.yellowShader
+          break
+
+        case this.redLoli.children[0]:
+          targetCandy = this.redLoli
+          shader = this.redShader
+          break
+
+        case this.tealLoli.children[0]:
+          targetCandy = this.tealLoli
+          shader = this.tealShader
+          break
+
+        case this.blueLoli.children[0]:
+          targetCandy = this.blueLoli
+          shader = this.blueShader
+          break
+
+        case this.blueGum1.children[0]:
+          targetGum = this.blueGum1
+          shader = this.blueGumShader1
+          break
+
+        case this.purpleGum1.children[0]:
+          targetGum = this.purpleGum1
+          shader = this.purpleShader1
+          break
+
+        case this.orangeGum1.children[0]:
+          targetGum = this.orangeGum1
+          shader = this.orangeShader1
+          break
+
+        case this.greenGum1.children[0]:
+          targetGum = this.greenGum1
+          shader = this.greenShader1
+          break
+
+        case this.greenGum2.children[0]:
+          targetGum = this.greenGum2
+          shader = this.greenShader2
+          break
+      }
+    }
+
+    // ANIMATE CANDY
+    if (targetCandy) {
+      const random = Math.floor(Math.random() * 2)
+      const timeLine = window.gsap.timeline()
+      timeLine
+        .to(
+          targetCandy.rotation,
+          {
+            duration: 6,
+            ease: 'elastic',
+            y: random === 0 ? '+=8' : '-=8'
+          }
+        ).to(
+          targetCandy.scale,
+          {
+            duration: 5,
+            ease: 'elastic',
+            x: targetCandy.scale.x === 1 ? '0.4' : '1',
+            y: targetCandy.scale.y === 1 ? '0.4' : '1',
+            z: targetCandy.scale.z === 1 ? '0.4' : '1'
+          }, '-=4'
+        ).to(
+          shader.scale,
+          {
+            duration: 5,
+            ease: 'elastic',
+            x: shader.scale.x === 1 ? '0.4' : '1',
+            y: shader.scale.y === 1 ? '0.4' : '1',
+            z: shader.scale.z === 1 ? '0.4' : '1'
+          }, '-=5'
+        )
+
+    // ANIMATE GUMDROP
+    } else if (targetGum) {
+      const random = Math.floor(Math.random() * 2)
+      const timeLine = window.gsap.timeline()
+      timeLine
+        .to(
+          targetGum.scale,
+          {
+            duration: 4,
+            ease: 'elastic',
+            x: targetGum.scale.x === 1 ? '2' : '1',
+            y: targetGum.scale.y === 1 ? '2' : '1',
+            z: targetGum.scale.z === 1 ? '2' : '1'
+          }
+        ).to(
+          shader.scale,
+          {
+            duration: 4,
+            ease: 'elastic',
+            x: shader.scale.x === 0.47 ? '0.95' : '0.47',
+            y: shader.scale.y === 0.47 ? '0.95' : '0.47',
+            z: shader.scale.z === 0.47 ? '0.95' : '0.47'
+          }, '-=4'
+        ).to(
+          targetGum.rotation,
+          {
+            duration: 3,
+            ease: 'elastic',
+            x: random === 0 ? '+=6.28318' : '-=6.28318',
+            z: random === 0 ? '+=3.14159' : '-=6.28318'
+          }, '-=4'
+        )
+    }
   }
 
   render() {
@@ -335,23 +722,20 @@ class App extends Component {
       <div className='app' ref={this.appRef}>
         <div className='webgl' ref={ref => (this.mount = ref)} />
 
-        {/** Initial welcome */}
-        <section id='home' className="section1">
+        <section id='home' className="section one">
           <Navbar />
+          {this.state.toggleWelcome && <Welcome toggleWelcome={this.state.toggleWelcome} setWelcome={this.handleWelcomeChange} />}
         </section>
 
-        {/** Staff section */}
-        <section id='staff' className="section2">
+        <section id='staff' className="section two">
           <StaffInfo />
         </section>
 
-        {/** Services */}
-        <section id='services' className="section3">
+        <section id='services' className="section three">
           {this.state.width > 550 ? <Accordion /> : <List selected={this.state.selected} setSelected={this.handleSelectedChange} />}
         </section>
 
-        {/** Contact info */}
-        <section id='contact' className="section4">
+        <section id='contact' className="section four">
           <Contact />
         </section>
       </div>

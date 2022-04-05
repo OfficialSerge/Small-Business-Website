@@ -1,0 +1,73 @@
+.welcomeDiv {
+  width: 75vmax;
+  height: 60vmin;
+  padding: 3vmin;
+  display: grid;
+  justify-content: center;
+  align-items: baseline;
+  
+  border-radius: 1vmax;
+  box-shadow: 2px 2px 7px rgba(0, 0, 0, 0.159);
+  backdrop-filter: blur(5px);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.welcomeDiv h1 {
+  margin: 2% auto 2% auto;
+  font-size: 3.5vmin;
+  text-align: center;
+}
+
+.imageDiv {
+  width: 50vmax;
+  height: 50vmin;
+  margin: auto;
+  position: relative;
+}
+
+.imageDiv img {
+  width: inherit;
+  height: inherit;
+}
+
+.imageDiv button {
+  position: absolute;
+  width: 4vmin;
+  height: 4vmin;
+  top: 0;
+  right: 0;
+  margin: 0;
+  font-size: 2vmin;
+  font-weight: bold;
+  color: aliceblue;
+
+  background: rgba(0, 0, 0, 0);
+  border: none;
+  border-radius: 3px;
+}
+
+.imageDiv button:hover {
+  transition: 1s;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.imageDiv button:active {
+  scale: 0.95;
+  transition: scale 0s;
+}
+
+@media only screen and (max-width: 550px) {
+  .welcomeDiv {
+    width: 90vmin;
+    height: 35vmax;
+  }
+  .imageDiv {
+    width: 85vmin;
+    height: 25vmax;
+  }
+  .imageDiv button {
+    width: 4vmax;
+    height: 4vmax;
+    font-size: 2vmax;
+  }
+}

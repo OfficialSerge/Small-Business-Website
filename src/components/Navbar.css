@@ -8,7 +8,7 @@
 
 ul {
   list-style-type: none;
-  font-size: 2.5vmin;
+  font-size: 3.5vmin;
   font-weight: bold;
   margin: 0;
   padding: 0;
@@ -21,15 +21,25 @@ li {
 
 li:nth-child(n+2) {
   float: right;
-  padding: 0 7px 0 7px;
+  padding: 0 0.5vmax 0 0.5vmax;
 }
 
 a {
   cursor: default;
-  color: #6080a8;
+  color: #0096CC;
   text-decoration: none;
 }
 
 li:nth-child(n+2) a:hover {
   color: white;
+}
+
+@media only screen and (max-width: 550px) {
+  .Navbar {
+    margin: 3vmin 0;
+  }
+  li {
+    display: inline;
+    padding: 0 5px 0 0;
+  }
 }

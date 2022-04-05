@@ -28,7 +28,7 @@ export function Navbar() {
           style={{ 
             'transitionDelay': clicked === 'contact' && '1s',
             'transitionDuration': clicked === 'contact' && '0.5s'
-         }}>contact</Link>
+         }}>Contact</Link>
         </li>
 
         <li><Link to="services" smooth={true} duration={1000}
@@ -36,7 +36,7 @@ export function Navbar() {
           style={{ 
             'transitionDelay': clicked === 'services' && '1s',
             'transitionDuration': clicked === 'services' && '0.5s'
-         }}>services</Link>
+         }}>Services</Link>
         </li>
 
         <li><Link to="staff" smooth={true} duration={1000}
@@ -44,7 +44,7 @@ export function Navbar() {
           style={{  
             'transitionDelay': clicked === 'staff' && '1s',
             'transitionDuration': clicked === 'staff' && '0.5s'
-          }}>our staff</Link>
+          }}>Staff</Link>
         </li>
       </ul>
     </div>

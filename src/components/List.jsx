@@ -67,32 +67,26 @@ const data = [
   }
 ]
 
-export class List extends Component {
-  constructor(props) {
-    super(props)
+export function List({ selected, setSelected }) {
+  // SET STATE OF SELECTED
+  function handleChange(i) {
+    setSelected(i)
   }
 
-  // SET STATE OF SELECTED IN APP
-  handleChange = (i) => {
-    this.props.setSelected(i)
-  }
-
-  render() {
-    return (
-      <div className='list'>
-        {
-          data.map((item, i) =>
-            <div className="item">
-              <div className="title" onClick={() => this.handleChange(i)}>
-                <h2>{item.title}</h2>
-                <span>{this.props.selected === i ? '-' : '+'}</span>
-              </div>
-
-              <div className={this.props.selected === i ? "card show" : "card"}>{parse(item.body)}</div>
+  return (
+    <div className='list'>
+      {
+        data.map((item, i) =>
+          <div className="item">
+            <div className="title" onClick={() => handleChange(i)}>
+              <h2>{item.title}</h2>
+              <span>{selected === i ? '-' : '+'}</span>
             </div>
-          )
-        }
-      </div>
-    )
-  }
+
+            <div className={selected === i ? "card show" : "card"}>{parse(item.body)}</div>
+          </div>
+        )
+      }
+    </div>
+  )
 }
